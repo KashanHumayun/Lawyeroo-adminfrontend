@@ -1,15 +1,23 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import AdminRegisterPage from './pages/admin/AdminRegister';
-import LoginPage  from './pages/Login';
+import LoginPage from './pages/Login';
 import AdminDashboardPage from './pages/admin/AdminDashboard';
+import ProtectedRoute from './pages/protectedRoutes'; // Import the ProtectedRoute component
+
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/admin/register" element={<AdminRegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/dashboard" element={<AdminDashboardPage />} />
+        <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+
+        {/* Protected Route for Admin Dashboard */}
+        <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute component={AdminDashboardPage} path="/dashboard" />
+          } 
+        />
 
         {/* Other routes can be added here */}
       </Routes>

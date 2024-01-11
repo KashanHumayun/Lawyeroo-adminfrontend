@@ -24,7 +24,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
   setSelectedItem,
 }) => {
   return (
-    <div className="w-1/6 bg-gradient-to-br from-purple-600 to-purple-500 p-6 text-white">
+<div className="w-1/6 h-full bg-gradient-to-br from-purple-600 to-purple-500 p-6 text-white sticky top-0 ">
       <div className="flex flex-col items-center mb-5">
         <img
           src={FullLogo}

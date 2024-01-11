@@ -1,18 +1,19 @@
 import React, { useState } from "react";
 import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaUser, FaCalendarAlt } from 'react-icons/fa';
-import FieldWithIcon from './FieldWithIcon'; // Adjust the path as necessary
 
 interface Admin {
-  profile_picture: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  ph_number: string;
-  address: string;
-  created_at: string;
-  updated_at: string;
-  account_type: string;
-}
+    admin_id: number;
+    first_name: string;
+    last_name: string;
+    email: string;
+    ph_number: string;
+    address: string;
+    profile_picture: string;
+    created_at: string;
+    updated_at: string;
+    account_type: string;
+    password: string; // Added password field
+  }
 
 interface EditAdminSectionProps {
   admin: Admin;
@@ -103,6 +104,41 @@ const EditAdminSection: React.FC<EditAdminSectionProps> = ({
   );
 };
 
+interface FieldWithIconProps {
+    Icon: React.ComponentType;
+    id: string;
+    name: string;
+    value: string;
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    placeholder: string;
+    type?: string;
+  }
+  
+  const FieldWithIcon: React.FC<FieldWithIconProps> = ({
+    Icon,
+    id,
+    name,
+    value,
+    onChange,
+    placeholder,
+    type = "text",
+  }) => (
+    <div className="mb-4 flex items-center border-b border-purple-300 py-2">
+      <span className="text-purple-500 mr-3">
+        <Icon />
+      </span>
+      <input
+        type={type}
+        id={id}
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none"
+      />
+    </div>
+  );
+  
 // Reuse FieldWithIcon component from your EditProfileSection
 // ...
 

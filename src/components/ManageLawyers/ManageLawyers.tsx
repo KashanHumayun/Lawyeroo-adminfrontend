@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { 
-    FaEdit, FaTrashAlt, FaCheck, FaTimes, FaSearch, FaUserTie, 
-    FaUniversity, FaStar, FaEnvelope, FaPhone, FaMapMarkerAlt, FaBalanceScale 
-  } from 'react-icons/fa';
-  
+  FaEdit, FaTrashAlt, FaPlus, FaSearch, FaUserTie, 
+  FaUniversity, FaStar, FaCheck, FaTimes, FaEnvelope, FaPhone, FaMapMarkerAlt, FaBalanceScale, FaSpinner 
+} from 'react-icons/fa';
+import AddLawyerSection from './AddLawyerSection';
+
+
 // Assuming Lawyer interface is defined elsewhere in your project
 interface Lawyer {
   lawyer_id: number;
@@ -30,52 +33,43 @@ interface ManageLawyersSectionProps {
 
 const ManageLawyersSection: React.FC<ManageLawyersSectionProps> = ({ onEditLawyer }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const lawyers: Lawyer[] = [
-    {
-      lawyer_id: 1,
-      first_name: "Alice",
-      last_name: "Johnson",
-      email: "alice.johnson@example.com",
-      fees:'20$',
-      ph_number: "+123456789",
-      address: "123 Main St, Townsville",
-      password: "alicepassword", // Note: Storing passwords like this is not recommended for security reasons
-      specializations: "Criminal Law",
-      years_of_experience: 5,
-      universities: "University A",
-      rating: 4.5,
-      created_at: "2020-01-01",
-      updated_at: "2021-01-01",
-      profile_picture: "/images/alice.jpg",
-      verified: true,
-      account_type: "Lawyer"
-    },
-    {
-      lawyer_id: 2,
-      first_name: "Bob",
-      last_name: "Smith",
-      email: "bob.smith@example.com",
-      fees:'25$',
-      ph_number: "+987654321",
-      address: "456 Side St, Villagetown",
-      password: "bobpassword", // Note: Storing passwords like this is not recommended for security reasons
-      specializations: "Family Law",
-      years_of_experience: 7,
-      universities: "University B",
-      rating: 4.7,
-      created_at: "2019-05-15",
-      updated_at: "2021-06-20",
-      profile_picture: "/images/bob.jpg",
-      verified: false,
-      account_type: "Lawyer"
-    }
-    // ... more lawyer objects ...
-  ];
-  
+  const [showAddLawyer, setShowAddLawyer] = useState(false);
+  const [lawyers, setLawyers] = useState<Lawyer[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLawyers = async () => {
+      setIsLoading(true); // Start loading
+      try {
+        // Simulate fetching data from API
+        const response = await axios.get('http://localhost:3000/api/lawyers');
+        setLawyers(response.data);
+      } catch (error) {
+        console.error('Error fetching lawyers:', error);
+      }
+      setIsLoading(false); // End loading
+    };
+
+    fetchLawyers();
+  }, []);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setSearchTerm(e.target.value);
   };
+  const addLawyer = () => {
+    setShowAddLawyer(true);
+  };
+
+  const onSaveNewLawyer = (newLawyer: Lawyer) => {
+    console.log('New Lawyer Added:', newLawyer);
+    setShowAddLawyer(false);
+    // Here you might want to add logic to update the list of lawyers
+  };
+
+  const onCancelAddLawyer = () => {
+    setShowAddLawyer(false);
+  };
+
 
   const removeLawyer = (lawyerId: number): void => {
     // Implement the logic to remove a lawyer
@@ -84,19 +78,36 @@ const ManageLawyersSection: React.FC<ManageLawyersSectionProps> = ({ onEditLawye
   };
  
   return (
-    <div className="p-6 bg-white shadow-md rounded-lg">
-      <h1 className="text-2xl font-semibold mb-4 text-purple-600">Manage Lawyers</h1>
-      <div className="mb-6 flex items-center bg-white border border-purple-300 rounded-md overflow-hidden">
-        <FaSearch className="ml-4 text-purple-500" />
-        <input
-          type="text"
-          placeholder="Search Lawyers"
-          value={searchTerm}
-          onChange={handleSearchChange}
-          className="p-2 w-full focus:outline-none"
-        />
-      </div>
-      <div className="overflow-x-auto">
+
+<div className="p-6 bg-white shadow-md rounded-lg">
+      {showAddLawyer ? (
+        <AddLawyerSection onAdd={onSaveNewLawyer} onCancel={onCancelAddLawyer} />
+      ) : (
+        <>
+
+<h1 className="text-2xl font-semibold mb-4 text-purple-600">Manage Lawyers</h1>
+          <div className="mb-6 flex items-center justify-between">
+            <div className="flex items-center bg-white border border-purple-300 rounded-md overflow-hidden">
+              <FaSearch className="ml-4 text-purple-500" />
+              <input
+                type="text"
+                placeholder="Search Lawyers"
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className="p-2 w-full focus:outline-none"
+              />
+            </div>
+            <button onClick={addLawyer} className="bg-purple-500 text-white p-2 rounded hover:bg-purple-700 flex items-center">
+              <FaPlus className="mr-2" /> Add Lawyer
+            </button>
+          </div>
+
+          <div className="overflow-x-auto">
+            {isLoading ? (
+              <div className="flex justify-center items-center py-10">
+                <FaSpinner className="animate-spin text-purple-500 text-4xl" />
+              </div>
+            ) : (
         <table className="w-full text-left text-gray-700">
           <thead className="bg-purple-500 text-white">
             <tr>
@@ -165,7 +176,10 @@ const ManageLawyersSection: React.FC<ManageLawyersSectionProps> = ({ onEditLawye
             ))}
           </tbody>
         </table>
+        )}
+
       </div>
+      </>)}
     </div>
   );
 };

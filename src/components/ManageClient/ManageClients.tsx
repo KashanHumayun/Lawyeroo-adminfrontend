@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
 import {
-    FaEdit, FaTrashAlt, FaCheck, FaTimes, FaSearch, FaUserCircle,
-    FaEnvelope, FaBalanceScale,FaPhone, FaHome, FaCalendarAlt, FaCalendarCheck
-  } from 'react-icons/fa';
+  FaEdit, FaTrashAlt, FaCheck, FaTimes, FaSearch, FaUserCircle,
+  FaEnvelope, FaPhone, FaHome, FaBalanceScale, FaCalendarAlt, FaCalendarCheck, FaPlus, FaSpinner
+} from 'react-icons/fa';
+import AddClientSection from './AddClientSection';
+
+
 
 // Assuming Client interface is defined elsewhere in your project
 interface Client {
@@ -20,73 +25,85 @@ interface Client {
   account_type: string;
   preferences: string;
 }
+interface ManageClientsSectionProps {
+  onEditClient: (client: Client) => void;
+}
 
-const ManageClientsSection = () => {
+
+const ManageClientsSection: React.FC<ManageClientsSectionProps> = ({ onEditClient }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const clients: Client[] = [
-    {
-      client_id: 1,
-      first_name: "Emily",
-      last_name: "Davis",
-      email: "emily.davis@example.com",
-      ph_number: "+11234567890",
-      address: "456 Hill St, Springfield",
-      password: "emilypassword", // Reminder: Handling passwords like this is not secure
-      created_at: "2020-02-15",
-      updated_at: "2021-05-20",
-      profile_picture: "/images/emily.jpg",
-      verified: true,
-      account_type: "Standard",
-      preferences: "Family Law, Real Estate"
-    },
-    {
-      client_id: 2,
-      first_name: "Michael",
-      last_name: "Brown",
-      email: "michael.brown@example.com",
-      ph_number: "+19876543210",
-      address: "789 Ocean Ave, Rivercity",
-      password: "michaelPassword", // Reminder: Handling passwords like this is not secure
-      created_at: "2019-11-10",
-      updated_at: "2021-03-22",
-      profile_picture: "/images/michael.jpg",
-      verified: false,
-      account_type: "Premium",
-      preferences: "Corporate Law, Tax Law"
-    }
-    // ... more client objects ...
-  ];
+  const [showAddClient, setShowAddClient] = useState(false);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.get('http://localhost:3000/api/clients');
+        setClients(response.data);
+      } catch (error) {
+        console.error('Error fetching clients:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchClients();
+  }, []);
+
   
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setSearchTerm(e.target.value);
   };
 
-  const editClient = (clientId: number): void => {
-    // Implement the logic to edit a client
-    console.log('Editing client with ID:', clientId);
-  };
 
   const removeClient = (clientId: number): void => {
     // Implement the logic to remove a client
     console.log('Removing client with ID:', clientId);
   };
+  const addClient = () => {
+    setShowAddClient(true); // Show the Add Client form
+  };
+
+  const onSaveNewClient = (newClient: Client) => {
+    console.log('New Client Added:', newClient);
+    setShowAddClient(false); // Hide the Add Client form after saving
+  };
+
+  const onCancelAddClient = () => {
+    setShowAddClient(false); // Hide the Add Client form without saving
+  };
 
   return (
     <div className="p-6 bg-white shadow-md rounded-lg">
-      <h1 className="text-2xl font-semibold mb-4 text-purple-600">Manage Clients</h1>
-      <div className="mb-6 flex items-center bg-white border border-purple-300 rounded-md overflow-hidden">
-        <FaSearch className="ml-4 text-purple-500" />
-        <input
-          type="text"
-          placeholder="Search Clients"
-          value={searchTerm}
-          onChange={handleSearchChange}
-          className="p-2 w-full focus:outline-none"
-        />
-      </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-gray-700">
+    {showAddClient ? (
+      <AddClientSection onAdd={onSaveNewClient} onCancel={onCancelAddClient} />
+    ) : (
+      <>
+        <h1 className="text-2xl font-semibold mb-4 text-purple-600">Manage Clients</h1>
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center bg-white border border-purple-300 rounded-md overflow-hidden">
+            <FaSearch className="ml-4 text-purple-500" />
+            <input
+              type="text"
+              placeholder="Search Clients"
+              value={searchTerm}
+              onChange={handleSearchChange}
+              className="p-2 w-full focus:outline-none"
+            />
+          </div>
+          <button onClick={addClient} className="bg-purple-500 text-white p-2 rounded hover:bg-purple-700 flex items-center">
+            <FaPlus className="mr-2" /> Add Client
+          </button>
+        </div>
+        <div className="overflow-x-auto">
+            {isLoading ? (
+              <div className="flex justify-center items-center py-10">
+                <FaSpinner className="animate-spin text-purple-500 text-4xl" />
+              </div>
+            ) : (        <table className="w-full text-left text-gray-700">
           <thead className="bg-purple-500 text-white">
             <tr>
               <th className="p-3">Profile</th>
@@ -141,9 +158,10 @@ const ManageClientsSection = () => {
                     {client.verified ? <FaCheck className="text-green-500" /> : <FaTimes className="text-red-500" />}
                   </td>
                   <td>
-                    <button onClick={() => editClient(client.client_id)} className="mr-2 text-blue-500 hover:text-blue-700">
+                  <button onClick={() => onEditClient(client)} className="mr-2 text-blue-500 hover:text-blue-700">
                       <FaEdit />
                     </button>
+
                     <button onClick={() => removeClient(client.client_id)} className="text-red-500 hover:text-red-700">
                       <FaTrashAlt />
                     </button>
@@ -152,7 +170,10 @@ const ManageClientsSection = () => {
             ))}
           </tbody>
         </table>
+                            )}
+
       </div>
+      </>)}
     </div>
   );
 };

@@ -5,19 +5,21 @@ import DashboardSection from "../../components/Dasboard/DashboardSection";
 import MyProfileSection from "../../components/Profile/MyProfileSection";
 import ManageAdminsSection from "../../components/ManageAdmin/ManageAdmins";
 import ManageLawyersSection from "../../components/ManageLawyers/ManageLawyers";
-import ManageCasesSection from "../../components/ManageCases";
-import ManageReportsSection from "../../components/ManageReports";
+import ManageCasesSection from "../../components/ManageCases/ManageCases";
+import ManageReportsSection from "../../components/ManageReports/ManageReportSection";
 import ViewLogsSection from "../../components/ViewLogs";
-import ManageClientsSection from "../../components/ManageClients";
-import ManageAppointmentSection from "../../components/ManageAppointments";
+import ManageClientsSection from "../../components/ManageClient/ManageClients";
+import ManageAppointmentSection from "../../components/ManageAppoinment/ManageAppointments";
 import AdminSidebar from "../../components/Sidebar/AdminSidebar";
 import EditProfileSection from "../../components/Profile/EditProfileSection";
 import EditAdminSection from "../../components/ManageAdmin/EditAdminSection";
 import EditLawyerSection from "../../components/ManageLawyers/EditLawyerSection";
+import EditClientSection from "../../components/ManageClient/EditClientSection";
 interface Admin {
   admin_id: number;
   first_name: string;
   last_name: string;
+  password:string;
   email: string;
   ph_number: string;
   address: string;
@@ -46,13 +48,30 @@ interface Lawyer {
   account_type: string;
 }
 
+interface Client {
+  client_id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  ph_number: string;
+  address: string;
+  password: string;
+  created_at: string;
+  updated_at: string;
+  profile_picture: string;
+  verified: boolean;
+  account_type: string;
+  preferences: string;
+}
+
 
 const AdminDashboard = () => {
   const [selectedItem, setSelectedItem] = useState("dashboard"); // Set 'dashboard' as default
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [currentAdmin, setCurrentAdmin] = useState<Admin | null>(null);
   const [currentLawyer, setCurrentLawyer] = useState<Lawyer | null>(null);
-
+  const [currentClient, setCurrentClient] = useState<Client | null>(null);
+  
   const mockAdmin = {
     profile_picture: "/ch_kashan.jpg", // Replace with a real image path
     first_name: "Kashan",
@@ -100,6 +119,20 @@ const AdminDashboard = () => {
     setSelectedItem("manageAdmins"); // Go back to the manage admins view
   };
 
+   // Callback for editing a client
+   const handleEditClient = (client: Client) => {
+    setCurrentClient(client);
+    setSelectedItem("editClient");
+  };
+
+  const handleBackFromEditClient = () => {
+    setCurrentClient(null);
+    setSelectedItem("manageClients");
+  };
+
+  
+
+  
   // Function to render the selected section
   const renderSelectedSection = () => {
     switch (selectedItem) {
@@ -138,9 +171,18 @@ const AdminDashboard = () => {
       case "viewLogs":
         return <ViewLogsSection />;
       case "manageClients":
-        return <ManageClientsSection />;
+        return <ManageClientsSection onEditClient={handleEditClient} />;
+        case "editClient":
+        return currentClient ? (
+          <EditClientSection
+            client={currentClient}
+            onSave={() => null} // Replace with actual onSave logic
+            onBack={handleBackFromEditClient}
+          />
+        ) : <div>Loading...</div>;
       case "manageAppointments":
         return <ManageAppointmentSection />;
+      
       case "editAdmin":
         return currentAdmin ? (
           <EditAdminSection
@@ -155,6 +197,7 @@ const AdminDashboard = () => {
         );
       
 
+      
       // You can add more cases here for additional sections
       default:
         return null; // Or render a default/fallback component
