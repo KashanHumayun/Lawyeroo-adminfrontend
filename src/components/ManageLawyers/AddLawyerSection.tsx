@@ -1,6 +1,36 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { FaUser, FaGavel, FaHourglassStart, FaEnvelope, FaPhone, FaMapMarkerAlt, FaUniversity, FaStar, FaDollarSign, FaImage } from 'react-icons/fa';
+import Select, {  MultiValue } from 'react-select';
+
+import {
+  FaUser, FaGavel, FaHourglassStart, FaEnvelope, FaPhone, FaMapMarkerAlt,
+  FaUniversity, FaStar, FaDollarSign, FaImage
+} from 'react-icons/fa';
+
+
+const lawyerCategories = [
+  { value: "Criminal Law", label: "Criminal Law" },
+  { value: "Business Law", label: "Business Law" },
+  { value: "Family Law", label: "Family Law" },
+  { value: "Labor Law", label: "Labor Law" },
+  { value: "Civil Rights Law", label: "Civil Rights Law" },
+  { value: "Tax Law", label: "Tax Law" },
+  { value: "Real Estate Law", label: "Real Estate Law" },
+  { value: "Intellectual Property Law", label: "Intellectual Property Law" },
+  { value: "Bankruptcy Law", label: "Bankruptcy Law" },
+  { value: "Personal Injury Law", label: "Personal Injury Law" },
+  { value: "Environmental Law", label: "Environmental Law" },
+  { value: "Estate Planning Law", label: "Estate Planning Law" },
+  { value: "Corporate Law", label: "Corporate Law" },
+  { value: "Immigration Law", label: "Immigration Law" },
+  { value: "Contract Law", label: "Contract Law" }
+];
+
+
+interface Option {
+  value: string;
+  label: string;
+}
 
 interface Lawyer {
   first_name: string;
@@ -9,8 +39,8 @@ interface Lawyer {
   fees: string;
   ph_number: string;
   address: string;
-  password:string;
-  specializations: string;
+  password: string;
+  specializations: Option[];
   universities: string;
   years_of_experience: number;
   rating: number;
@@ -18,6 +48,7 @@ interface Lawyer {
   account_type: string;
   verified: boolean;
 }
+
 
 interface AddLawyerSectionProps {
   onAdd: (lawyer: Lawyer) => void;
@@ -33,14 +64,13 @@ const AddLawyerSection: React.FC<AddLawyerSectionProps> = ({ onAdd, onCancel }) 
     ph_number: '',
     password: 'password@123',
     address: '',
-    specializations: '',
+    specializations: [],
     universities: '',
     years_of_experience: 0,
     rating: 0,
     profile_picture: '',
-    account_type: 'Lawyer', // Default value
-    verified: false,        // Default value
-
+    account_type: 'Lawyer',
+    verified: false,
   });
   const [profileImage, setProfileImage] = useState('/default-profile.jpg');
 
@@ -61,19 +91,52 @@ const AddLawyerSection: React.FC<AddLawyerSectionProps> = ({ onAdd, onCancel }) 
     setNewLawyer({ ...newLawyer, [e.target.name]: e.target.value });
   };
 
+  const handleSelectChange = (selectedOptions: MultiValue<Option>) => {
+    // Create a copy of the readonly array if needed
+    const specializations = selectedOptions.map(option => ({ ...option }));
+    setNewLawyer({ ...newLawyer, specializations: specializations });
+  };
+  
+
+  
+
+
+
+  const validateInputs = (): boolean => {
+    const { first_name, last_name, email, ph_number, fees } = newLawyer;
+    const emailRegex = /^(([^<>()[]\\.,;:\s@"]+(\.[^<>()[]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    const phoneRegex = /^\+?([0-9]{1,3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4,5})$/;
+          
+    
+    if (!first_name.trim() || !last_name.trim() || !email.trim() || !ph_number.trim() || !fees.trim()) {
+      alert('Please fill in all fields.');
+      return false;
+    }
+    if (!emailRegex.test(email)) {
+      alert('Please enter a valid email address.');
+      return false;
+    }
+    if (!phoneRegex.test(ph_number)) {
+      alert('Please enter a valid phone number.');
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateInputs()) return;
+
     try {
       const response = await axios.post('http://localhost:3000/api/add-lawyer', newLawyer);
-      console.log(response.data); // Log the response
+      console.log(response.data);
       alert('Lawyer added successfully');
-      onAdd(newLawyer); // Update your UI accordingly
+      onAdd(newLawyer);
     } catch (error) {
       console.error('Error adding lawyer:', error);
       alert('Error adding lawyer');
     }
   };
-
 
   return (
     <form onSubmit={handleSubmit} className="bg-gray-100 p-8 rounded-lg shadow-lg max-w-4xl mx-auto">
@@ -85,7 +148,9 @@ const AddLawyerSection: React.FC<AddLawyerSectionProps> = ({ onAdd, onCancel }) 
         </div>
       </div>
       {/* Form Fields */}
+      {/* Each input field setup similar to the ones below, included only a subset for brevity */}
       <div className="grid md:grid-cols-2 gap-6">
+        {/* First Name Field */}
         <div className="mb-4 flex items-center border-b border-purple-300 py-2">
           <FaUser className="text-purple-500 mr-3" />
           <input
@@ -98,8 +163,7 @@ const AddLawyerSection: React.FC<AddLawyerSectionProps> = ({ onAdd, onCancel }) 
             className="appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none"
           />
         </div>
-        {/* Last Name Field */}
-  <div className="mb-4 flex items-center border-b border-purple-300 py-2">
+        <div className="mb-4 flex items-center border-b border-purple-300 py-2">
     <FaUser className="text-purple-500 mr-3" />
     <input
       type="text"
@@ -168,18 +232,22 @@ const AddLawyerSection: React.FC<AddLawyerSectionProps> = ({ onAdd, onCancel }) 
   </div>
 
   {/* Specializations Field */}
-  <div className="mb-4 flex items-center border-b border-purple-300 py-2">
-    <FaGavel className="text-orange-500 mr-3" />
-    <input
-      type="text"
-      id="specializations"
-      name="specializations"
-      value={newLawyer.specializations}
-      onChange={handleChange}
-      placeholder="Specializations"
-      className="appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none"
-    />
-  </div>
+  <div className="mb-4">
+        <FaGavel className="text-orange-500 mr-3" />
+        <Select
+        isMulti
+        name="specializations"
+        options={lawyerCategories}
+        className="basic-multi-select"
+        classNamePrefix="select"
+        placeholder="Select Specializations"
+        onChange={handleSelectChange}
+        value={newLawyer.specializations}
+      />
+
+      </div>
+
+
 
   {/* Universities Field */}
   <div className="mb-4 flex items-center border-b border-purple-300 py-2">
@@ -224,18 +292,17 @@ const AddLawyerSection: React.FC<AddLawyerSectionProps> = ({ onAdd, onCancel }) 
     />
   </div>
 
-        {/* Repeat the above structure for last name, email, phone number, etc. */}
-      </div>
-      {/* Submit and Cancel Buttons */}
-      <div className="flex justify-center mt-6">
-        <button type="submit" className="bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded shadow">
-          Add Lawyer
-        </button>
-        <button type="button" onClick={onCancel} className="bg-gray-300 hover:bg-gray-400 text-purple-500 py-2 px-4 rounded shadow ml-4">
-          Cancel
-        </button>
-      </div>
 
+      </div>
+              {/* Submit and Cancel Buttons */}
+              <div className="flex justify-center mt-6 ">
+          <button type="submit" className="bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded shadow">
+            Add Lawyer
+          </button>
+          <button type="button" onClick={onCancel} className="bg-gray-300 hover:bg-gray-400 text-purple-500 py-2 px-4 rounded shadow ml-4">
+            Cancel
+          </button>
+        </div>
     </form>
   );
 };

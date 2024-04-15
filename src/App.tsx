@@ -15,7 +15,7 @@ function App() {
         <Route 
           path="/dashboard" 
           element={
-            <ProtectedRoute component={AdminDashboardPage} path="/dashboard" />
+            <ProtectedRoute component={AdminDashboardPage} path="/admin/dashboard" />
           } 
         />
 
